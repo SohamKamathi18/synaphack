@@ -141,8 +141,16 @@ def verify_password(password: str, hashed: str) -> bool:
     return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
 
 def create_jwt_token(user_data: dict) -> str:
+    # Convert datetime objects to ISO strings for JSON serialization
+    serializable_data = {}
+    for key, value in user_data.items():
+        if isinstance(value, datetime):
+            serializable_data[key] = value.isoformat()
+        else:
+            serializable_data[key] = value
+    
     payload = {
-        **user_data,
+        **serializable_data,
         'exp': datetime.utcnow() + timedelta(hours=JWT_EXPIRATION_HOURS)
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
